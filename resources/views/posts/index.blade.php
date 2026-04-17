@@ -39,7 +39,7 @@
     @forelse($posts as $post)
         <div class="post">
             <div class="post-author">
-                {{ '@' . $post->user->username }}
+                {{ '@' . $post->user->name }}
                 <span class="post-time">- {{ $post->created_at->diffForHumans() }}</span>
             </div>
             <div class="post-content">{{ $post->content }}</div>
