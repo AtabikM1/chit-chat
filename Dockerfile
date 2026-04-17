@@ -21,4 +21,4 @@ RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set folder kerja di dalam container
-WORKDIR /var/www
+WORKDIR /var/www/twitter-clone

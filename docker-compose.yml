@@ -1,52 +1,19 @@
 version: '3.8'
 services:
-    # Container 1: Mesin PHP (Kita beri nama 'app')
     app:
         build:
             context: .
             dockerfile: Dockerfile
-        container_name: chitchat
+        container_name: chitchat_app
         restart: unless-stopped
-        working_dir: /var/www
+        # SANGAT PENTING: Gunakan path absolut yang sama persis antara VPS dan Container
+        # Asumsi folder proyekmu di VPS adalah /var/www/twitter-clone
+        working_dir: /var/www/twitter-clone
         volumes:
-            - ./:/var/www # Sinkronisasi kodemu dengan folder di dalam container
-        networks:
-            - chit_network
-
-    # Container 2: Nginx Web Server
-    nginx:
-        image: nginx:alpine
-        container_name: chit_nginx
-        restart: unless-stopped
+            - /var/www/twitter-clone:/var/www/twitter-clone
         ports:
-            - "8000:80" # Akses di browser laptopmu via http://localhost:8000
-        volumes:
-            - ./:/var/www
-            - ./docker/nginx/app.conf:/etc/nginx/conf.d/default.conf
-        depends_on:
-            - app
-        networks:
-            - chit_network
-
-    # Container 3: MySQL Database
-    db:
-        image: mysql:8.0
-        container_name: chit_db
-        restart: unless-stopped
-        environment:
-            # Mengambil data dari file .env milikmu
-            MYSQL_DATABASE: ${DB_DATABASE}
-            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-        volumes:
-            - db_data:/var/lib/mysql # Mengamankan data agar tidak hilang saat container mati
-        ports:
-            - "33060:3306"
-        networks:
-            - chit_network
-
-networks:
-    chit_network:
-        driver: bridge
-
-volumes:
-    db_data:
+            # Buka port 9000 hanya untuk internal VPS (127.0.0.1), jangan ke publik (0.0.0.0)
+            - "127.0.0.1:9000:9000"
+        extra_hosts:
+            # INI JEMBATANNYA: Mengizinkan Docker mengakses MySQL di VPS utama
+            - "host.docker.internal:host-gateway"
