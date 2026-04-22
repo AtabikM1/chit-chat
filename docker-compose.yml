@@ -6,14 +6,10 @@ services:
             dockerfile: Dockerfile
         container_name: chitchat_app
         restart: unless-stopped
-        # SANGAT PENTING: Gunakan path absolut yang sama persis antara VPS dan Container
-        # Asumsi folder proyekmu di VPS adalah /var/www/twitter-clone
         working_dir: /var/www/twitter-clone
         volumes:
             - /var/www/twitter-clone:/var/www/twitter-clone
         ports:
-            # Buka port 9000 hanya untuk internal VPS (127.0.0.1), jangan ke publik (0.0.0.0)
             - "127.0.0.1:9000:9000"
         extra_hosts:
-            # INI JEMBATANNYA: Mengizinkan Docker mengakses MySQL di VPS utama
             - "host.docker.internal:host-gateway"
