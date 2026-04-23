@@ -1,15 +1,35 @@
-version: '3.8'
+    version: '3.8'
+
 services:
+
     app:
         build:
             context: .
             dockerfile: Dockerfile
         container_name: chitchat_app
         restart: unless-stopped
-        working_dir: /var/www/twitter-clone
+        working_dir: /var/www/chitchat
         volumes:
-            - /var/www/twitter-clone:/var/www/twitter-clone
+            - .:/var/www/chitchat
+        networks:
+            - chitchat_network
+
+
+    webserver:
+        image: nginx:alpine
+        container_name: chitchat_web
+        restart: unless-stopped
         ports:
-            - "127.0.0.1:9000:9000"
-        extra_hosts:
-            - "host.docker.internal:host-gateway"
+            - "80:80"
+            - "8080:8080"
+        volumes:
+            - .:/var/www/chitchat
+            - ./nginx/conf.d:/etc/nginx/conf.d # Tempat nyimpen config Nginx
+        networks:
+            - chitchat_network
+        depends_on:
+            - app
+
+networks:
+    chitchat_network:
+        driver: bridge
