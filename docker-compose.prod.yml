@@ -20,7 +20,8 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - ./nginx/production.conf:/etc/nginx/conf.d/default.conf
+      # KOREKSI: Sesuaikan dengan jalur foldering ideal yang dikirim via SCP
+      - ./docker/nginx/prod.conf:/etc/nginx/conf.d/default.conf
       - app-assets:/var/www/chitchat:ro
     networks:
       - chitchat-prod-network
@@ -45,9 +46,9 @@ services:
       retries: 3
 
 networks:
-    chitchat-prod-network:
-      driver: bridge
+  chitchat-prod-network:
+    driver: bridge
 
 volumes:
-    mysql_prod_data:
-    app-assets:
+  mysql_prod_data:
+  app-assets:

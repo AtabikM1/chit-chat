@@ -38,18 +38,18 @@ jobs:
       - name: Copy Production Compose and Nginx to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.SERVER_IP }}       # SINKRON: SERVER_IP
-          username: ${{ secrets.USERNAME }}     # SINKRON: USERNAME
-          key: ${{ secrets.SSH_KEY }}          # SINKRON: SSH_KEY
-          source: "docker-compose.prod.yml,docker/nginx/"
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "docker-compose.prod.yml,docker/**"
           target: "/home/atabik/chitchat-prod"
 
       - name: SSH to VPS and Update Container
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.SERVER_IP }}       # SINKRON: SERVER_IP
-          username: ${{ secrets.USERNAME }}     # SINKRON: USERNAME
-          key: ${{ secrets.SSH_KEY }}          # SINKRON: SSH_KEY
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
           script: |
             mkdir -p /home/atabik/chitchat-prod
             cd /home/atabik/chitchat-prod
@@ -70,17 +70,15 @@ jobs:
             echo "SESSION_DRIVER=file" >> .env
             echo "QUEUE_CONNECTION=sync" >> .env
 
-            export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
-            export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            export DB_DATABASE=${{ secrets.DB_DATABASE }}
-
-            docker compose -f docker-compose.prod.yml pull
-            docker compose -f docker-compose.prod.yml up -d --force-recreate
+            # Ambil env file untuk proses translasi docker compose secara andal
+            docker compose --env-file .env -f docker-compose.prod.yml pull
+            docker compose --env-file .env -f docker-compose.prod.yml up -d --force-recreate
 
             echo "Waiting for database..."
-            sleep 10
+            sleep 15
 
-            docker exec chitchat_app_prod php artisan config:clear
-            docker exec chitchat_app_prod php artisan migrate --force
+            # KOREKSI: Memakai nama container eksak 'chitchat_app_production'
+            docker exec chitchat_app_production php artisan config:clear
+            docker exec chitchat_app_production php artisan migrate --force
 
             docker image prune -f
