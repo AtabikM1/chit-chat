@@ -1,11 +1,15 @@
+version: '3.8'
+
 services:
   app:
-    image: ${DOCKERHUB_USERNAME}/chitchat-app:latest
+    image: ${DOCKERHUB_USERNAME}/chitchat-app:latest  # Menggunakan image hasil build CI/CD
     container_name: chitchat_app_production
-    restart: always
+    restart: unless-stopped
     working_dir: /var/www/chitchat
+    volumes:
+      - chitchat_assets:/var/www/chitchat  # Share code ke volume
     networks:
-      - chitchat-prod-network
+      - chitchat_network
     depends_on:
       db:
         condition: service_healthy
@@ -13,37 +17,24 @@ services:
   webserver:
     image: nginx:alpine
     container_name: chitchat_webserver_production
-    restart: always
+    restart: unless-stopped
     ports:
-      - "8080:80"
+      - "8080:80"  # Sesuai dengan port di docker ps kamu
     volumes:
-      - ./docker/nginx/prod.conf:/etc/nginx/conf.d/default.conf
-      - .:/var/www/chitchat:ro
+      - chitchat_assets:/var/www/chitchat  # Nginx membaca dari volume yang sama
+      - ./docker/nginx/app.conf:/etc/nginx/conf.d/default.conf
     networks:
-      - chitchat-prod-network
+      - chitchat_network
     depends_on:
       - app
 
   db:
-    image: mysql:8.0
-    container_name: chitchat_db_production
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-      MYSQL_DATABASE: ${DB_DATABASE}
-    volumes:
-      - mysql_prod_data:/var/lib/mysql
-    networks:
-      - chitchat-prod-network
-    healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+  # ... konfigurasi db tetap sama
 
 networks:
-  chitchat-prod-network:
+  chitchat_network:
     driver: bridge
 
 volumes:
-  mysql_prod_data:
+  mysql_data:
+  chitchat_assets:  # Deklarasikan volume bersama di sini
