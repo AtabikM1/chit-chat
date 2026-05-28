@@ -1,13 +1,15 @@
-version: '3.8'
-
 services:
   app:
-    image: ${DOCKERHUB_USERNAME}/chitchat-app:latest  # Menggunakan image hasil build CI/CD
+    image: ${DOCKERHUB_USERNAME}/chitchat-app:latest
     container_name: chitchat_app_production
     restart: unless-stopped
     working_dir: /var/www/chitchat
+    # Paksa container membaca file .env hasil generate GitHub Actions di VPS
+    env_file:
+      - .env
     volumes:
-      - chitchat_assets:/var/www/chitchat  # Share code ke volume
+      # Kita hanya membagikan folder public ke volume bersama agar dibaca Nginx
+      - chitchat_public_assets:/var/www/chitchat/public
     networks:
       - chitchat_network
     depends_on:
@@ -19,9 +21,10 @@ services:
     container_name: chitchat_webserver_production
     restart: unless-stopped
     ports:
-      - "8080:80"  # Sesuai dengan port di docker ps kamu
+      - "8080:80"
     volumes:
-      - chitchat_assets:/var/www/chitchat  # Nginx membaca dari volume yang sama
+      # Nginx hanya membaca folder public untuk try_files
+      - chitchat_public_assets:/var/www/chitchat/public:ro
       - ./docker/nginx/app.conf:/etc/nginx/conf.d/default.conf
     networks:
       - chitchat_network
@@ -29,7 +32,21 @@ services:
       - app
 
   db:
-  # ... konfigurasi db tetap sama
+    image: mysql:8.0
+    container_name: chitchat_db_production
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: unless-stopped
+    networks:
+      - chitchat_network
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
 
 networks:
   chitchat_network:
@@ -37,4 +54,4 @@ networks:
 
 volumes:
   mysql_data:
-  chitchat_assets:  # Deklarasikan volume bersama di sini
+  chitchat_public_assets:
