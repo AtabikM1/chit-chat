@@ -17,10 +17,10 @@ class UserSeeder extends Seeder
          [
              'name' => 'biki',
              'password' => Hash::make('password'),
-         ]  ,
+         ],
             [
-                'name' => 'rizkoy',
-                'password' => Hash::make('bikitampan'),
+                'name' => 'genduy'
+                , 'password' => Hash::make('123')
             ]
         ];
         foreach ($data as $d) {

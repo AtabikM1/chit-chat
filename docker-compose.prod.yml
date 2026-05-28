@@ -1,0 +1,53 @@
+services:
+  app:
+    image: ${DOCKERHUB_USERNAME}/chitchat-app:latest
+    container_name: chitchat_app_production
+    restart: always
+    user: "1000:1000"
+    working_dir: /var/www/chitchat
+    volumes:
+      - app-assets:/var/www/chitchat
+    networks:
+      - chitchat-prod-network
+    depends_on:
+      db:
+        condition: service_healthy
+
+  webserver:
+    image: nginx:alpine
+    container_name: chitchat_webserver_production
+    restart: always
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/production.conf:/etc/nginx/conf.d/default.conf
+      - app-assets:/var/www/chitchat:ro
+    networks:
+      - chitchat-prod-network
+    depends_on:
+      - app
+
+  db:
+    image: mysql:8.0
+    container_name: chitchat_db_production
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+    volumes:
+      - mysql_prod_data:/var/lib/mysql
+    networks:
+      - chitchat-prod-network
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      interval: 3s
+      timeout: 4s
+      retries: 3
+
+networks:
+    chitchat-prod-network:
+      driver: bridge
+
+volumes:
+    mysql_prod_data:
+    app-assets:

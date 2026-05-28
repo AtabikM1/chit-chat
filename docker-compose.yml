@@ -1,4 +1,4 @@
-    version: '3.8'
+version: '3.8'
 
 services:
 
@@ -7,12 +7,16 @@ services:
             context: .
             dockerfile: Dockerfile
         container_name: chitchat_app
+        user: 1000:1000
         restart: unless-stopped
         working_dir: /var/www/chitchat
         volumes:
             - .:/var/www/chitchat
         networks:
             - chitchat_network
+        depends_on:
+            db:
+                condition: service_healthy
 
 
     webserver:
@@ -20,16 +24,35 @@ services:
         container_name: chitchat_web
         restart: unless-stopped
         ports:
-            - "80:80"
-            - "8080:8080"
+            - "8000:80"
         volumes:
             - .:/var/www/chitchat
-            - ./nginx/conf.d:/etc/nginx/conf.d # Tempat nyimpen config Nginx
+            - ./docker/nginx/app.conf:/etc/nginx/conf.d/default.conf
         networks:
             - chitchat_network
         depends_on:
             - app
-
+    db:
+        image: mysql:8.0
+        container_name: chitchat_db
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: chitchat
+        ports:
+            -   "3306:3306"
+        volumes:
+            -   mysql_data:/var/lib/mysql
+        restart: unless-stopped
+        networks:
+            - chitchat_network
+        healthcheck:
+            test: ["CMD", "mysqladmin" ,"ping"]
+            interval: 3s
+            timeout: 3s
+            retries: 3
 networks:
     chitchat_network:
         driver: bridge
+
+volumes:
+    mysql_data:
