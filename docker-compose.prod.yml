@@ -3,7 +3,6 @@ services:
     image: ${DOCKERHUB_USERNAME}/chitchat-app:latest
     container_name: chitchat_app_production
     restart: always
-    user: "1000:1000"
     working_dir: /var/www/chitchat
     volumes:
       - app-assets:/var/www/chitchat
