@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Timeline - Private Board</title>
+    <title>TALKTIME - Private Board</title>
     <style>
         body { font-family: monospace; background-color: #fafafa; color: #111; max-width: 600px; margin: 0 auto; padding: 20px; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
@@ -20,7 +20,7 @@
 <body>
 
 <div class="header">
-    <h2>[ TIMELINE ]</h2>
+    <h2>[ TALKTIME ]</h2>
     <form action="{{ url('/logout') }}" method="POST" style="margin: 0;">
         @csrf
         <button type="submit" class="logout">LOGOUT [{{ auth()->user()->username }}]</button>

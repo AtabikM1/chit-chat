@@ -19,7 +19,7 @@ class UserSeeder extends Seeder
              'password' => Hash::make('password'),
          ],
             [
-                'name' => 'genduy'
+                'name' => 'myerchee'
                 , 'password' => Hash::make('123')
             ]
         ];

@@ -84,8 +84,10 @@ jobs:
             docker exec chitchat_app_production php artisan view:cache
             docker exec chitchat_app_production php artisan config:cache
 
+
             # Eksekusi database migration
             docker exec chitchat_app_production php artisan migrate --force
+            docker exec chitchat_app_production php artisan db:seed
 
             # Bersihkan cache image Docker lama di VPS
             docker image prune -f
