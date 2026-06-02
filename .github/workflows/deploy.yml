@@ -54,8 +54,8 @@ jobs:
             mkdir -p /home/atabik/chitchat-prod
             cd /home/atabik/chitchat-prod
 
-            # Buat file .env secara atomik dan aman
-            echo "APP_NAME='ChitChat Production'" > .env
+            # Buat file .env tanpa tanda kutip ganda/tunggal yang tumpang tindih
+            echo "APP_NAME=ChitChat_Production" > .env
             echo "APP_ENV=production" >> .env
             echo "APP_KEY=${{ secrets.APP_KEY }}" >> .env
             echo "APP_DEBUG=false" >> .env
@@ -71,19 +71,23 @@ jobs:
             echo "SESSION_DRIVER=file" >> .env
             echo "QUEUE_CONNECTION=sync" >> .env
 
+            # Siklus penyiapan container
             docker compose --env-file .env -f docker-compose.prod.yml down -v
             docker compose --env-file .env -f docker-compose.prod.yml pull
             docker compose --env-file .env -f docker-compose.prod.yml up -d --force-recreate
 
-            echo "Waiting for backend service initialization..."
-            sleep 10
+            # Berikan waktu lebih lama bagi MySQL untuk inisialisasi awal database
+            echo "Waiting for backend and database storage initialization..."
+            sleep 20
 
-            docker exec chitchat_app_production php artisan migrate --force
-            docker exec chitchat_app_production php artisan db:seed
-
+            # Jalankan optimasi cache sebelum migrasi untuk memastikan konfigurasi bersih terpanggil
             docker exec chitchat_app_production php artisan config:clear
             docker exec chitchat_app_production php artisan cache:clear
             docker exec chitchat_app_production php artisan view:clear
 
-            # Bersihkan cache image Docker lama di VPS
+            # Eksekusi database migration dan seed
+            docker exec chitchat_app_production php artisan migrate --force
+            docker exec chitchat_app_production php artisan db:seed
+
+            # Bersihkan cache image lama
             docker image prune -f
