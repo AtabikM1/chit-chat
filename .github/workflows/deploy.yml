@@ -87,7 +87,7 @@ jobs:
 
             # Eksekusi database migration dan seed
             docker exec chitchat_app_production php artisan migrate --force
-            docker exec chitchat_app_production php artisan db:seed
+            docker exec chitchat_app_production php artisan db:seed --force
 
             # Bersihkan cache image lama
             docker image prune -f
