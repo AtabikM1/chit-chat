@@ -17,7 +17,7 @@ services:
         condition: service_healthy
 
   webserver:
-    image: nginx:alpinelatestlatest
+    image: nginx:alpine
     container_name: chitchat_webserver_production
     restart: unless-stopped
     ports:
