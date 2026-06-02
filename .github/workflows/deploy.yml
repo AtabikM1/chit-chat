@@ -71,7 +71,7 @@ jobs:
             echo "SESSION_DRIVER=file" >> .env
             echo "QUEUE_CONNECTION=sync" >> .env
 
-            # Tarik image baru dan jalankan ulang container
+            docker compose --env-file .env -f docker-compose.prod.yml down -v
             docker compose --env-file .env -f docker-compose.prod.yml pull
             docker compose --env-file .env -f docker-compose.prod.yml up -d --force-recreate
 
