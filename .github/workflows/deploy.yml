@@ -78,16 +78,12 @@ jobs:
             echo "Waiting for backend service initialization..."
             sleep 10
 
-            # Optimasi Runtime Laravel Pasca Deployment
-            docker exec chitchat_app_production php artisan config:clear
-            docker exec chitchat_app_production php artisan cache:clear
-            docker exec chitchat_app_production php artisan view:cache
-            docker exec chitchat_app_production php artisan config:cache
-
-
-            # Eksekusi database migration
             docker exec chitchat_app_production php artisan migrate --force
             docker exec chitchat_app_production php artisan db:seed
+
+            docker exec chitchat_app_production php artisan config:clear
+            docker exec chitchat_app_production php artisan cache:clear
+            docker exec chitchat_app_production php artisan view:clear
 
             # Bersihkan cache image Docker lama di VPS
             docker image prune -f
