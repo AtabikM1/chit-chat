@@ -1,32 +1,47 @@
-/**
- * We'll load the axios HTTP library which allows us to easily issue requests
- * to our Laravel back-end. This library automatically handles sending the
- * CSRF token as a header based on the value of the "XSRF" token cookie.
- */
-
+import Echo from 'laravel-echo';
+import Pusher from 'pusher-js';
 import axios from 'axios';
-window.axios = axios;
+window.axios = axios; // <-- BARIS INI WAJIB ADA
 
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+window.Pusher = Pusher;
 
-/**
- * Echo exposes an expressive API for subscribing to channels and listening
- * for events that are broadcast by Laravel. Echo and event broadcasting
- * allows your team to easily build robust real-time web applications.
- */
+window.Echo = new Echo({
+    broadcaster: 'reverb',
+    key: import.meta.env.VITE_REVERB_APP_KEY,
+    wsHost: import.meta.env.VITE_REVERB_HOST,
+    wsPort: import.meta.env.VITE_REVERB_PORT,
+    wssPort: import.meta.env.VITE_REVERB_PORT,
+    // OTOMATIS: Jika di server mendeteksi skema 'https', forceTLS wajib bernilai true
+    forceTLS: import.meta.env.VITE_REVERB_SCHEME === 'https',
+    enabledTransports: ['ws', 'wss'],
+    authEndpoint: null,
+});
+// Daftarkan listener langsung di file kompilasi utama Vite
+// Daftarkan listener langsung di file kompilasi utama Vite dengan nama kustom yang BENAR
+window.Echo.channel('chat-room')
+    .listen('.message.sent', (e) => { // <-- TAMBAHKAN TITIK DAN SESUAIKAN NAMANYA
+        console.log('Pesan mendarat dengan valid di app.js:', e);
 
-// import Echo from 'laravel-echo';
+        const container = document.getElementById('postsContainer');
+        if (container) {
+            const empty = document.getElementById('emptyState');
+            if (empty) empty.remove();
 
-// import Pusher from 'pusher-js';
-// window.Pusher = Pusher;
+            // Sesuai objek dump Anda yang valid
+            const username = e.user ? e.user.name : 'Anonymous';
+            const content = e.post ? e.post.content : '';
 
-// window.Echo = new Echo({
-//     broadcaster: 'pusher',
-//     key: import.meta.env.VITE_PUSHER_APP_KEY,
-//     cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER ?? 'mt1',
-//     wsHost: import.meta.env.VITE_PUSHER_HOST ? import.meta.env.VITE_PUSHER_HOST : `ws-${import.meta.env.VITE_PUSHER_APP_CLUSTER}.pusher.com`,
-//     wsPort: import.meta.env.VITE_PUSHER_PORT ?? 80,
-//     wssPort: import.meta.env.VITE_PUSHER_PORT ?? 443,
-//     forceTLS: (import.meta.env.VITE_PUSHER_SCHEME ?? 'https') === 'https',
-//     enabledTransports: ['ws', 'wss'],
-// });
+            const postHTML = `
+                <div class="post">
+                    <div class="post-author">
+                        @${username}
+                        <span class="post-time">- just now</span>
+                    </div>
+                    <div class="post-content">${content}</div>
+                </div>
+            `;
+            container.insertAdjacentHTML('afterbegin', postHTML);
+            console.log('DOM berhasil dirender secara fisik untuk:', username);
+        }
+    });

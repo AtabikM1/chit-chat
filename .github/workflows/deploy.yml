@@ -54,22 +54,46 @@ jobs:
             mkdir -p /home/atabik/chitchat-prod
             cd /home/atabik/chitchat-prod
 
-            # Buat file .env tanpa tanda kutip ganda/tunggal yang tumpang tindih
+            # Buat file .env produksi secara dinamis
             echo "APP_NAME=ChitChat_Production" > .env
             echo "APP_ENV=production" >> .env
             echo "APP_KEY=${{ secrets.APP_KEY }}" >> .env
             echo "APP_DEBUG=false" >> .env
-            echo "APP_URL=${{ secrets.APP_URL }}" >> .env
+            echo "APP_URL=https://chitchat.atabikm.me" >> .env
             echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> .env
+
+            # Database
             echo "DB_CONNECTION=mysql" >> .env
             echo "DB_HOST=db" >> .env
             echo "DB_PORT=3306" >> .env
             echo "DB_DATABASE=${{ secrets.DB_DATABASE }}" >> .env
             echo "DB_USERNAME=root" >> .env
             echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-            echo "CACHE_DRIVER=file" >> .env
+
+            # Drivers (Penting: Ubah queue ke redis!)
+            echo "CACHE_DRIVER=redis" >> .env
             echo "SESSION_DRIVER=file" >> .env
-            echo "QUEUE_CONNECTION=sync" >> .env
+            echo "QUEUE_CONNECTION=redis" >> .env
+
+            # Redis Configuration
+            echo "REDIS_HOST=redis" >> .env
+            echo "REDIS_PORT=6379" >> .env
+
+            # Reverb Internal Server Config (PHP Backend menembak kontainer ini)
+            echo "REVERB_SERVER_HOST=0.0.0.0" >> .env
+            echo "REVERB_SERVER_PORT=8080" >> .env
+            echo "REVERB_HOST=chitchat.atabikm.me" >> .env
+            echo "REVERB_PORT=443" >> .env
+            echo "REVERB_SCHEME=https" >> .env
+            echo "REVERB_APP_ID=${{ secrets.REVERB_APP_ID }}" >> .env
+            echo "REVERB_APP_KEY=${{ secrets.REVERB_APP_KEY }}" >> .env
+            echo "REVERB_APP_SECRET=${{ secrets.REVERB_APP_SECRET }}" >> .env
+
+            # Sisi Client / Vite Configuration (Wajib terbaca oleh JavaScript browser)
+            echo "VITE_REVERB_APP_KEY=${{ secrets.REVERB_APP_KEY }}" >> .env
+            echo "VITE_REVERB_HOST=chitchat.atabikm.me" >> .env
+            echo "VITE_REVERB_PORT=443" >> .env
+            echo "VITE_REVERB_SCHEME=https" >> .env
 
             # Siklus penyiapan container
             docker compose --env-file .env -f docker-compose.prod.yml down -v

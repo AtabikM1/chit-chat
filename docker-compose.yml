@@ -11,12 +11,30 @@ services:
         working_dir: /var/www/chitchat
         volumes:
             - .:/var/www/chitchat
+        ports:
+            - "8080:8080" # Ekspos port Reverb langsung dari container PHP
         networks:
             - chitchat_network
         depends_on:
             db:
                 condition: service_healthy
 
+    # SERVICE NODE BARU
+    node:
+        image: node:20-alpine
+        container_name: chitchat_node
+        restart: unless-stopped
+        working_dir: /var/www/chitchat
+        volumes:
+            - .:/var/www/chitchat
+        ports:
+            - "5173:5173" # Port default Vite
+        environment:
+            - NODE_ENV=development
+        networks:
+            - chitchat_network
+        # Command ini otomatis install package dan menjalankan server Vite dev
+        command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
 
     webserver:
         image: nginx:alpine
@@ -31,12 +49,13 @@ services:
             - chitchat_network
         depends_on:
             - app
+
     db:
         image: mysql:8.0
         container_name: chitchat_db
         environment:
-            MYSQL_ROOT_PASSWORD: root
-            MYSQL_DATABASE: chitchat
+            - MYSQL_ROOT_PASSWORD=root
+            - MYSQL_DATABASE=chitchat
         ports:
             -   "3306:3306"
         volumes:
@@ -49,6 +68,7 @@ services:
             interval: 3s
             timeout: 3s
             retries: 3
+
 networks:
     chitchat_network:
         driver: bridge
