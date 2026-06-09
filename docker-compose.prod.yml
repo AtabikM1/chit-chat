@@ -32,6 +32,20 @@ services:
     depends_on:
       - app
 
+  queue-worker:
+    image: ${DOCKERHUB_USERNAME}/chitchat-app:latest
+    container_name: chitchat_worker_production
+    restart: unless-stopped
+    working_dir: /var/www/chitchat
+    # Jalankan worker secara konstan untuk menguras antrean di Redis
+    command: php artisan queue:work --tries=3 --timeout=90
+    env_file:
+      - .env
+    networks:
+      - chitchat_network
+    depends_on:
+      - app
+      - redis
   # ARTIFAK BARU: Redis sebagai driver Queue Broadcast Produksi
   redis:
     image: redis:alpine
