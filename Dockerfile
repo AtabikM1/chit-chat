@@ -34,8 +34,7 @@ RUN rm -f .env
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
 # UBAH INI: Tambahkan flag --ignore-platform-req=ext-http atau sejenisnya jika ada package luar yang rewel
-RUN composer install --no-interaction --optimize-autoloader --no-dev --ignore-platform-reqs --no-scripts
-RUN composer dump-autoload --optimize --no-dev --classmap-authoritative
+RUN composer install --no-interaction --optimize-autoloader --no-dev
 # Set permissions
 RUN chown -R www-data:www-data storage bootstrap/cache
 
