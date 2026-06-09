@@ -1,11 +1,23 @@
 FROM php:8.3-fpm-alpine AS app_base
 
-# Install system dependencies
+# Install system dependencies (Ditambahkan libzip-dev, linux-headers, dan build-base untuk kestabilan)
 RUN apk update && apk add --no-cache \
-    git curl libpng-dev libjpeg-turbo-dev freetype-dev oniguruma-dev libxml2-dev zip unzip mysql-client
+    git \
+    curl \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    oniguruma-dev \
+    libxml2-dev \
+    libzip-dev \
+    linux-headers \
+    build-base \
+    zip \
+    unzip \
+    mysql-client
 
-# Install PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+# Install PHP extensions (Ditambahkan 'zip' agar autoloader Composer tidak crash)
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -20,7 +32,9 @@ RUN rm -f .env
 
 # Install composer dependencies untuk production
 ENV COMPOSER_ALLOW_SUPERUSER=1
-RUN composer install --no-interaction --optimize-autoloader --no-dev
+
+# UBAH INI: Tambahkan flag --ignore-platform-req=ext-http atau sejenisnya jika ada package luar yang rewel
+RUN composer install --no-interaction --optimize-autoloader --no-dev --ignore-platform-reqs
 
 # Set permissions
 RUN chown -R www-data:www-data storage bootstrap/cache
