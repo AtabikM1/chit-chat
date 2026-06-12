@@ -24,6 +24,8 @@ services:
     restart: unless-stopped
     working_dir: /var/www/chitchat
     command: php artisan reverb:start --host=0.0.0.0 --port=8080
+    ports:
+      - "8080:8080"
     env_file:
       - .env
     networks:
