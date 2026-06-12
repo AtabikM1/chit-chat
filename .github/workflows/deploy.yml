@@ -70,7 +70,7 @@ jobs:
             echo "DB_USERNAME=root" >> .env
             echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
 
-            # Drivers (Penting: Ubah queue ke redis!)
+            # Drivers
             echo "CACHE_DRIVER=redis" >> .env
             echo "SESSION_DRIVER=file" >> .env
             echo "QUEUE_CONNECTION=redis" >> .env
@@ -79,36 +79,31 @@ jobs:
             echo "REDIS_HOST=redis" >> .env
             echo "REDIS_PORT=6379" >> .env
 
-            # Reverb Internal Server Config (PHP Backend menembak kontainer ini)
-            # GANTI BLOK INI PADA WORKFLOW GITHUB ACTIONS ANDA
-
-          # --- REVERB INTERNAL SERVER BINDING ---
-          # Menentukan di mana container 'reverb' membuka socketnya sendiri
+            # --- REVERB INTERNAL SERVER BINDING ---
             echo "REVERB_SERVER_HOST=0.0.0.0" >> .env
             echo "REVERB_SERVER_PORT=8080" >> .env
 
             # --- BACKEND CONNECTION (Laravel App -> Reverb Container) ---
-            # Laravel PHP harus menembak langsung nama service container-nya lewat jaringan internal Docker.
-            # JANGAN gunakan domain publik di sini untuk menghindari error loopback 500.
-            echo "REVERB_HOST=reverb" >> .env
+            # Diarahkan ke nama container produksi agar pas dengan docker-compose.prod.yml
+            echo "REVERB_HOST=chitchat_reverb_production" >> .env
             echo "REVERB_PORT=8080" >> .env
             echo "REVERB_SCHEME=http" >> .env
             echo "REVERB_APP_ID=${{ secrets.REVERB_APP_ID }}" >> .env
             echo "REVERB_APP_KEY=${{ secrets.REVERB_APP_KEY }}" >> .env
             echo "REVERB_APP_SECRET=${{ secrets.REVERB_APP_SECRET }}" >> .env
 
-            # --- FRONTEND CONNECTION (Browser Client -> Reverse Proxy VPS -> Reverb) ---
-            # Browser user di internet wajib memanggil domain SSL publik Anda pada port aman 443.
+            # --- FRONTEND CONNECTION (Browser Client -> Reverse Proxy) ---
             echo "VITE_REVERB_APP_KEY=${{ secrets.REVERB_APP_KEY }}" >> .env
             echo "VITE_REVERB_HOST=chitchat.atabikm.me" >> .env
             echo "VITE_REVERB_PORT=443" >> .env
             echo "VITE_REVERB_SCHEME=https" >> .env
+
             # Siklus penyiapan container
             docker compose --env-file .env -f docker-compose.prod.yml down -v
             docker compose --env-file .env -f docker-compose.prod.yml pull
             docker compose --env-file .env -f docker-compose.prod.yml up -d --force-recreate
 
-            # Berikan waktu lebih lama bagi MySQL untuk inisialisasi awal database
+            # Berikan waktu bagi MySQL untuk inisialisasi awal database
             echo "Waiting for backend and database storage initialization..."
             sleep 20
 
